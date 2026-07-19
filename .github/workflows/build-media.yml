@@ -2,6 +2,8 @@ name: Build Hidden Leaf Kitchen media
 
 on:
   workflow_dispatch:
+  issues:
+    types: [opened]
   push:
     paths:
       - ".github/workflows/build-media.yml"
