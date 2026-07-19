@@ -1,0 +1,96 @@
+name: Build Hidden Leaf Kitchen media
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/build-media.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install downloader
+        run: python -m pip install --quiet gdown
+
+      - name: Download and convert all videos
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p raw videos
+
+          download() {
+            local id="$1"
+            local dest="$2"
+            if ! gdown --quiet "https://drive.google.com/uc?id=${id}" -O "$dest"; then
+              curl -L --fail --retry 3 --retry-delay 2 \
+                "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t" \
+                -o "$dest"
+            fi
+            test -s "$dest"
+          }
+
+          convert() {
+            local src="$1"
+            local dest="$2"
+            ffmpeg -nostdin -hide_banner -loglevel error -y -i "$src" \
+              -map 0:v:0 -map '0:a?' \
+              -vf "scale='min(720,iw)':-2:flags=fast_bilinear,format=yuv420p" \
+              -c:v libx264 -preset ultrafast -crf 28 -profile:v high -level 4.1 \
+              -c:a aac -b:a 128k -ar 48000 \
+              -movflags +faststart "$dest"
+          }
+
+          download "1IeH5XS9jZjfWtHMn2gpRhNENKVOjovBP" raw/01.mov
+          download "1UQIUoT9WcsI4RmMFnH0jm10bEbTtlNBV" raw/02.mov
+          download "1hXHQUjn-325FGens4kkZqkNeA4uW9Aav" raw/03.mp4
+          download "10I7VPvF7coByQD0JtGGAxvFMRypSHT7k" raw/04.mov
+          download "1eDjti6BrDYp0KBYujupxsrQwNafNnK_3" raw/05.mp4
+          download "1daeSeMAJG_Cb14kCQa4TPvAdBZhnm9cG" raw/06.mp4
+          download "1cfed-_Vlk8ZohQI_AGVFEfy91Ca7TIZY" raw/07.mp4
+          download "14CmESaGb0O5XQWHgH6ym_QxoEVq7lDiN" raw/08.mov
+          download "1ZxA6O3MMEwkXwrn6h4Um8nUszIQWfSGx" raw/09.mov
+          download "1nqm7Rr0cS9fHoKarinBUuy6sfTeSpGvm" raw/10.mov
+          download "158vIQWe7MtFHgiExLRbmeuPloh2Fnf-c" raw/11.mov
+          download "1WUGJAMRKRE71yfNSKe3GyPXda5DavGq7" raw/12.mov
+
+          convert raw/01.mov videos/01-chipotle-taco-bell-food-deals.mp4
+          convert raw/02.mov videos/02-save-on-taco-bell-orders.mp4
+          convert raw/03.mp4 videos/03-discounted-taco-bell-pizza-wings-chipotle.mp4
+          convert raw/04.mov videos/04-cheap-taco-bell-fast-food-community.mp4
+          convert raw/05.mp4 videos/05-cheaper-wings-loaded-bowls-desserts.mp4
+          convert raw/06.mp4 videos/06-cheap-mcdonalds-chick-fil-a-orders.mp4
+          convert raw/07.mp4 videos/07-cheap-food-discord-chipotle-pizza.mp4
+          convert raw/08.mov videos/08-50-percent-off-uber-eats-mcdonalds.mp4
+          convert raw/09.mov videos/09-check-uber-eats-prices-before-ordering.mp4
+          convert raw/10.mov videos/10-hidden-leaf-kitchen-discord-tour.mp4
+          convert raw/11.mov videos/11-cheap-food-order-proofs.mp4
+          convert raw/12.mov videos/12-uber-eats-deal-proofs-food-savings.mp4
+
+          test "$(find videos -maxdepth 1 -type f -name '*.mp4' | wc -l)" -eq 12
+          for file in videos/*.mp4; do
+            ffprobe -v error -select_streams v:0 \
+              -show_entries stream=codec_name,pix_fmt,width,height \
+              -of csv=p=0 "$file"
+          done
+
+      - name: Publish direct MP4 files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add videos
+          if git diff --cached --quiet; then
+            echo "Videos are already current."
+          else
+            git commit -m "Publish Hidden Leaf Kitchen MP4 media"
+            git push
+          fi
