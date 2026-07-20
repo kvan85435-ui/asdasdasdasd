@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: hidden-leaf-media-publish
@@ -114,3 +115,15 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main
           fi
+
+      - name: Report success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 3 --body "MEDIA_READY $(git rev-parse HEAD) — 12 H.264/AAC MP4 files published."
+
+      - name: Report failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 3 --body "MEDIA_BUILD_FAILED for run ${{ github.run_id }}."
