@@ -71,8 +71,8 @@ jobs:
             echo "Converting ${dest}"
             ffmpeg -nostdin -hide_banner -loglevel error -y -i "$src" \
               -map 0:v:0 -map '0:a?' \
-              -vf "fps=30,scale='min(720,iw)':-2:flags=fast_bilinear,format=yuv420p" \
-              -c:v libx264 -preset ultrafast -crf 28 -profile:v high -level 4.1 \
+              -vf "fps=30,scale=720:1280:force_original_aspect_ratio=decrease:flags=lanczos,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,format=yuv420p" \
+              -c:v libx264 -preset medium -crf 23 -profile:v high -level 4.1 \
               -c:a aac -b:a 128k -ar 48000 -ac 2 \
               -movflags +faststart "$dest"
           }
@@ -107,13 +107,28 @@ jobs:
           printf '[\n' > videos/manifest.json
           first=1
           for file in videos/*.mp4; do
-            probe="$(ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_type,codec_name,pix_fmt,width,height,r_frame_rate,sample_rate,channels -of json "$file")"
-            echo "$probe" | grep -q '"codec_name": "h264"'
-            echo "$probe" | grep -q '"codec_name": "aac"'
-            echo "$probe" | grep -q '"pix_fmt": "yuv420p"'
+            vcodec="$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$file")"
+            acodec="$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of csv=p=0 "$file")"
+            pix_fmt="$(ffprobe -v error -select_streams v:0 -show_entries stream=pix_fmt -of csv=p=0 "$file")"
+            width="$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 "$file")"
+            height="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$file")"
+            fps="$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "$file")"
+            duration="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$file")"
+            size="$(stat -c%s "$file")"
+
+            test "$vcodec" = "h264"
+            test "$acodec" = "aac"
+            test "$pix_fmt" = "yuv420p"
+            test "$width" = "720"
+            test "$height" = "1280"
+            test "$fps" = "30/1"
+            test "$size" -lt 104857600
+            awk -v d="$duration" 'BEGIN { exit !(d > 0 && d <= 60) }'
+
             if [ "$first" -eq 0 ]; then printf ',\n' >> videos/manifest.json; fi
             first=0
-            printf '  {"file":"%s","sha256":"%s"}' "$(basename "$file")" "$(sha256sum "$file" | cut -d' ' -f1)" >> videos/manifest.json
+            printf '  {"file":"%s","sha256":"%s","size":%s,"duration":%s,"video":"%s","audio":"%s","width":%s,"height":%s,"fps":"%s"}' \
+              "$(basename "$file")" "$(sha256sum "$file" | cut -d' ' -f1)" "$size" "$duration" "$vcodec" "$acodec" "$width" "$height" "$fps" >> videos/manifest.json
           done
           printf '\n]\n' >> videos/manifest.json
 
@@ -127,7 +142,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Videos are already current."
           else
-            git commit -m "Publish Postly-compatible Hidden Leaf Kitchen videos"
+            git commit -m "Publish Postly API-safe Hidden Leaf Kitchen videos"
             git pull --rebase origin main
             git push origin HEAD:main
           fi
@@ -136,7 +151,7 @@ jobs:
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 3 --body "MEDIA_READY $(git rev-parse HEAD) — 12 H.264/AAC MP4 files published."
+        run: gh issue comment 3 --body "MEDIA_READY $(git rev-parse HEAD) — 12 public H.264/AAC 720x1280 MP4 files published."
 
       - name: Report failure
         if: failure()
