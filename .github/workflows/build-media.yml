@@ -27,19 +27,32 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Install downloader
-        run: python -m pip install --quiet gdown
+      - name: Install tools
+        run: |
+          python -m pip install --quiet gdown
+          command -v ffmpeg
+          command -v ffprobe
 
       - name: Download, convert and validate videos
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+          report_error() {
+            local status="$?"
+            gh issue comment 3 --body "MEDIA_BUILD_ERROR status=${status} line=$1 command: $2"
+            exit "$status"
+          }
+          trap 'report_error "$LINENO" "$BASH_COMMAND"' ERR
+
           rm -rf raw videos
           mkdir -p raw videos
 
           download() {
             local id="$1"
             local dest="$2"
+            echo "Downloading ${dest}"
             if ! gdown --fuzzy --quiet "https://drive.google.com/file/d/${id}/view" -O "$dest"; then
               curl -L --fail --retry 4 --retry-delay 3 \
                 -A "Mozilla/5.0" \
@@ -53,6 +66,7 @@ jobs:
           convert() {
             local src="$1"
             local dest="$2"
+            echo "Converting ${dest}"
             ffmpeg -nostdin -hide_banner -loglevel error -y -i "$src" \
               -map 0:v:0 -map '0:a?' \
               -vf "fps=30,scale='min(720,iw)':-2:flags=fast_bilinear,format=yuv420p" \
