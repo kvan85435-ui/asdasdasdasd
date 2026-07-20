@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   issues:
     types: [opened]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
   push:
     paths:
       - ".github/workflows/build-media.yml"
@@ -13,11 +15,14 @@ permissions:
 
 jobs:
   build-media:
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Install downloader
         run: python -m pip install --quiet gdown
@@ -94,5 +99,5 @@ jobs:
             echo "Videos are already current."
           else
             git commit -m "Publish Hidden Leaf Kitchen MP4 media"
-            git push
+            git push origin HEAD:main
           fi
