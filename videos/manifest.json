@@ -1,14 +1,14 @@
 [
-  {"file":"01-chipotle-taco-bell-food-deals.mp4","sha256":"d38ee1e2cca74aad2423561bb2b95adc0d34afeccb567c61b5d4867791210255"},
-  {"file":"02-save-on-taco-bell-orders.mp4","sha256":"8f4c445f677cbeda536fc268d7a2ba19aba8e1818730665369dbe36bb8ad8b8d"},
-  {"file":"03-discounted-taco-bell-pizza-wings-chipotle.mp4","sha256":"4e0aee0b340036ec5bc280ab6c126bc1b63206e8457be48edb32fea5669bc5d7"},
-  {"file":"04-cheap-taco-bell-fast-food-community.mp4","sha256":"03d3f02e8a9bbdd55ef839241f1c0f671931441ea0717025ff60f0be3568894f"},
-  {"file":"05-cheaper-wings-loaded-bowls-desserts.mp4","sha256":"46a815e4e74e968db1e8952d69b7c84c5b75c27222f6ebbd875201b64d05c36a"},
-  {"file":"06-cheap-mcdonalds-chick-fil-a-orders.mp4","sha256":"c0babc60fb7f1b05e8c5c4bc6163fb4caa9115b0d5d19c8b2516952211827874"},
-  {"file":"07-cheap-food-discord-chipotle-pizza.mp4","sha256":"6ecfd60274c133b678e054a5032591e82bff86c3c5d7a9be8f568ba68c065158"},
-  {"file":"08-50-percent-off-uber-eats-mcdonalds.mp4","sha256":"183ea2a82beac3091dec43420cbce2604d52a5466c2d82a111b5ef2f6735f496"},
-  {"file":"09-check-uber-eats-prices-before-ordering.mp4","sha256":"53dc2451c2a4377cb878955dc4962f8811dc6094b616f7f9b3cd64aa48e08451"},
-  {"file":"10-hidden-leaf-kitchen-discord-tour.mp4","sha256":"81677c9c122601174a9867580756cd3be11c88fc98e41cb54cd47498400b1f93"},
-  {"file":"11-cheap-food-order-proofs.mp4","sha256":"d18e8cccda4d259a8ba3b445cf264ef448ff99f88f299763cb742364d7bb2d98"},
-  {"file":"12-uber-eats-deal-proofs-food-savings.mp4","sha256":"23c750908f68d1295f38af7a472d660a18fee3f501b00c6bdc5c91a34ed2192d"}
+  {"file":"01-chipotle-taco-bell-food-deals.mp4","sha256":"b8a153055183c1988bb8a6692325f78539f6ad2137d317b18fe7e97046872473","size":2229135,"duration":7.100000,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"02-save-on-taco-bell-orders.mp4","sha256":"2b0c1d998c78bbd845cbe4c08a48c254dd4b728fdb3a14137726157d5d766e05","size":5891355,"duration":15.974000,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"03-discounted-taco-bell-pizza-wings-chipotle.mp4","sha256":"38f8d272edf1b037c34d7c31d8accd80747a5cb282244ac32094e1057b32e4c5","size":5267571,"duration":15.466667,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"04-cheap-taco-bell-fast-food-community.mp4","sha256":"f4f9cf48a6fd54e0c3fb3ad4982f584b9f71827ca84b8acca609edab81b1a691","size":4970045,"duration":14.166667,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"05-cheaper-wings-loaded-bowls-desserts.mp4","sha256":"dc7d299417bd9426b6395ad672e8eeffadd7df4311ffdbfb7f9e75dcc0f373fe","size":3962724,"duration":15.509000,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"06-cheap-mcdonalds-chick-fil-a-orders.mp4","sha256":"2bbd3e712982787ad134abaff3b30cb96068508db06111aaf2c41dda7e1b9327","size":11744539,"duration":31.700000,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"07-cheap-food-discord-chipotle-pizza.mp4","sha256":"fb1d9535b83d1a92b088b3d0167e07fddb57137f0af6c2d7be816f17a361734f","size":3734213,"duration":13.966667,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"08-50-percent-off-uber-eats-mcdonalds.mp4","sha256":"d38d2ec4b41545ff70306324fdfc8678d806f96b92e51341c328ba846b6338ed","size":1914402,"duration":8.133333,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"09-check-uber-eats-prices-before-ordering.mp4","sha256":"0ae05ffb2def783a31b5831f5ee365284a1ca5dc845a420cd52e7f5d85cc9739","size":2907588,"duration":32.066667,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"10-hidden-leaf-kitchen-discord-tour.mp4","sha256":"f73e83b41574718292fc82ea531c76850d91fda8cd135f53728ae3ff304c91a2","size":3725283,"duration":32.112000,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"11-cheap-food-order-proofs.mp4","sha256":"d95a45ba2b764d7d23ba6a0650988204491c7807ca3dc40e6c6c43ea17061ef4","size":3747752,"duration":27.514000,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"},
+  {"file":"12-uber-eats-deal-proofs-food-savings.mp4","sha256":"108c7984d82fc29d83d2717fba170d54db1fcbaf4de831bfbd6817e66055a17e","size":2453800,"duration":17.251000,"video":"h264","audio":"aac","width":720,"height":1280,"fps":"30/1"}
 ]
