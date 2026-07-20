@@ -4,10 +4,6 @@ on:
   workflow_dispatch:
   issues:
     types: [opened]
-  pull_request:
-    types: [opened, synchronize, reopened]
-  pull_request_target:
-    types: [opened, synchronize, reopened]
   push:
     paths:
       - ".github/workflows/build-media.yml"
@@ -15,35 +11,42 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: hidden-leaf-media-publish
+  cancel-in-progress: false
+
 jobs:
   build-media:
-    if: github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Check out repository
+      - name: Check out main
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
 
       - name: Install downloader
         run: python -m pip install --quiet gdown
 
-      - name: Download and convert all videos
+      - name: Download, convert and validate videos
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf raw videos
           mkdir -p raw videos
 
           download() {
             local id="$1"
             local dest="$2"
-            if ! gdown --quiet "https://drive.google.com/uc?id=${id}" -O "$dest"; then
-              curl -L --fail --retry 3 --retry-delay 2 \
+            if ! gdown --fuzzy --quiet "https://drive.google.com/file/d/${id}/view" -O "$dest"; then
+              curl -L --fail --retry 4 --retry-delay 3 \
+                -A "Mozilla/5.0" \
                 "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t" \
                 -o "$dest"
             fi
             test -s "$dest"
+            ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$dest" >/dev/null
           }
 
           convert() {
@@ -51,9 +54,9 @@ jobs:
             local dest="$2"
             ffmpeg -nostdin -hide_banner -loglevel error -y -i "$src" \
               -map 0:v:0 -map '0:a?' \
-              -vf "scale='min(720,iw)':-2:flags=fast_bilinear,format=yuv420p" \
+              -vf "fps=30,scale='min(720,iw)':-2:flags=fast_bilinear,format=yuv420p" \
               -c:v libx264 -preset ultrafast -crf 28 -profile:v high -level 4.1 \
-              -c:a aac -b:a 128k -ar 48000 \
+              -c:a aac -b:a 128k -ar 48000 -ac 2 \
               -movflags +faststart "$dest"
           }
 
@@ -84,13 +87,20 @@ jobs:
           convert raw/12.mov videos/12-uber-eats-deal-proofs-food-savings.mp4
 
           test "$(find videos -maxdepth 1 -type f -name '*.mp4' | wc -l)" -eq 12
+          printf '[\n' > videos/manifest.json
+          first=1
           for file in videos/*.mp4; do
-            ffprobe -v error -select_streams v:0 \
-              -show_entries stream=codec_name,pix_fmt,width,height \
-              -of csv=p=0 "$file"
+            probe="$(ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_type,codec_name,pix_fmt,width,height,r_frame_rate,sample_rate,channels -of json "$file")"
+            echo "$probe" | grep -q '"codec_name": "h264"'
+            echo "$probe" | grep -q '"codec_name": "aac"'
+            echo "$probe" | grep -q '"pix_fmt": "yuv420p"'
+            if [ "$first" -eq 0 ]; then printf ',\n' >> videos/manifest.json; fi
+            first=0
+            printf '  {"file":"%s","sha256":"%s"}' "$(basename "$file")" "$(sha256sum "$file" | cut -d' ' -f1)" >> videos/manifest.json
           done
+          printf '\n]\n' >> videos/manifest.json
 
-      - name: Publish direct MP4 files
+      - name: Publish public media files
         shell: bash
         run: |
           set -euo pipefail
@@ -100,6 +110,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Videos are already current."
           else
-            git commit -m "Publish Hidden Leaf Kitchen MP4 media"
+            git commit -m "Publish Postly-compatible Hidden Leaf Kitchen videos"
+            git pull --rebase origin main
             git push origin HEAD:main
           fi
