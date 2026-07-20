@@ -29,9 +29,11 @@ jobs:
 
       - name: Install tools
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
           python -m pip install --quiet gdown
-          command -v ffmpeg
-          command -v ffprobe
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
 
       - name: Download, convert and validate videos
         shell: bash
