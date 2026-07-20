@@ -1,1 +1,2 @@
 Trigger the Hidden Leaf Kitchen media publishing workflow through a same-repository pull request.
+Trigger revision: standard pull request event.
